@@ -1,4 +1,5 @@
 import os
+import sys
 
 from hazelcast.config import Config
 
@@ -10,7 +11,11 @@ client_config.statistics_enabled = True
 home = os.getenv("CLC_HOME")
 if not home:
     from pathlib import Path
-    home = str(Path.home() / ".hazelcast")
+    if sys.platform == "win32":
+        hz_home = "AppData\Roaming\Hazelcast"
+    else:
+        hz_home = ".hazelcast"
+    home = str(Path.home() / hz_home)
 config_name = '''{{ or .config "default" }}'''
 if not config_name.endswith(".yaml"):
     config_name = home + f'''/configs/{config_name}'''
