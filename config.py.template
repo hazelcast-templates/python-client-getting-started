@@ -1,0 +1,48 @@
+import os
+
+from hazelcast.config import Config
+
+__all__ = ["client_config"]
+
+client_config = Config()
+client_config.statistics_enabled = True
+
+home = os.getenv("CLC_HOME")
+if not home:
+    from pathlib import Path
+    home = str(Path.home() / ".hazelcast")
+config_name = '''{{ or .config "default" }}'''
+if not config_name.endswith(".yaml"):
+    config_name = home + f'''/configs/{config_name}'''
+    config_dir = config_name
+else:
+    config_dir = os.path.split(config_name)[0]
+
+{{ if .cluster_name }}
+client_config.cluster_name = "{{ .cluster_name }}"
+{{ end }}
+{{ if .cluster_discovery_token }}
+client_config.cloud_discovery_token = "{{ .cluster_discovery_token }}"
+{{ else }}
+    {{ if .cluster_address }}
+client_config.cluster_members = ['''{{ .cluster_address }}''']
+    {{ end }}
+{{ end }}
+{{ if .ssl_key_path }}
+client_config.ssl_enabled = True
+client_config.ssl_keyfile = config_dir + "/{{ .ssl_key_path }}"
+{{ end }}
+{{ if .ssl_ca_path }}
+client_config.ssl_cafile = config_dir + "/{{ .ssl_ca_path }}"
+{{ end }}
+{{ if .ssl_cert_path }}
+client_config.ssl_certfile = config_dir + "/{{ .ssl_cert_path }}"
+{{ end }}
+{{ if .ssl_key_password }}
+client_config.ssl_password = "{{ .ssl_key_password }}"
+{{ end }}
+
+viridian_api_base = os.getenv("HZ_CLOUD_COORDINATOR_BASE_URL")
+if viridian_api_base:
+    from hazelcast.discovery import HazelcastCloudDiscovery
+    HazelcastCloudDiscovery._CLOUD_URL_BASE = viridian_api_base.lstrip("https://")
