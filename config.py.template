@@ -12,7 +12,7 @@ home = os.getenv("CLC_HOME")
 if not home:
     from pathlib import Path
     if sys.platform == "win32":
-        hz_home = "AppData\Roaming\Hazelcast"
+        hz_home = "AppData/Roaming/Hazelcast"
     else:
         hz_home = ".hazelcast"
     home = str(Path.home() / hz_home)
